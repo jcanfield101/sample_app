@@ -75,6 +75,27 @@ describe User do
     end
   end
   
+  describe "public attribute" do
+
+    before(:each) do
+      @user = User.create!(@attr)
+    end
+
+    it "should respond to public" do
+      @user.should respond_to(:public)
+    end
+
+    it "should be be public by default" do
+      @user.should be_public
+    end
+    
+    it "should be convertible to not public (private)" do
+      @user.toggle!(:public)
+      @user.should_not be_public
+    end
+  end
+   
+end
   describe "password validations" do
 
     it "should require a password" do

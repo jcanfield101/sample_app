@@ -6,25 +6,60 @@ describe UsersController do
   describe "GET 'index'" do
 
     describe "for non-signed-in users" do
-      it "should deny access" do
-        get :index
-        response.should redirect_to(signin_path)
+      before(:each) do
+        first = Factory(:user, :name => "Gore", :email => "vidal@example.org", :public => true)
+        second = Factory(:user, :name => "Norman", :email => "mailer@example.com", :public => true)
+        @users = [first, second, third, fourth]
       end
+        it "should allow access" do
+        get :index
+        response.should be_success
+       end
+        it "should only show list of public profiles" do
+         @users.each do |user|
+           if(user.public) #if it's true
+             get :index
+              response.should have_selector("li", :content => user.name)
+           elsif(!user.public) #if it's false
+              get :index
+              response.should_not have_selector("li", :content => user.name)
+           end
+          end
+       end
+     # it "should deny access" do
+      #  get :index
+       # response.should redirect_to(signin_path)
+      #end
     end
     
     describe "for signed-in-users" do
 
       before(:each) do
         @user = test_sign_in(Factory(:user))
-        second = Factory(:user, :name => "Bob", :email => "another@example.com")
-        third  = Factory(:user, :name => "Ben", :email => "another@example.net")
+        first = Factory(:user, :name => "Gore", :email => "vidal@example.com")
+        second = Factory(:user, :name => "Norman", :email => "Mailer@example.com")
+        third = Factory(:user, :name => "Bob", :email => "another@example.com")
+        fourth  = Factory(:user, :name => "Ben", :email => "another@example.net")
         
         30.times do
           Factory(:user, :name => Factory.next(:name),
                          :email => Factory.next(:email))
         end
       end
-      
+          
+
+       it "should only show public and private profiles" do
+         @users.each do |user|
+           if(user.public) 
+            get :index
+               response.should have_selector("li", :content => user.name)
+           elsif(!user.public)
+            get :index
+               response.should have_selector("li", :content => user.name)
+           end
+          end
+       end
+       
       it "should be successful" do
         get :index
         response.should be_success
@@ -42,6 +77,52 @@ describe UsersController do
         end
       end
       
+          describe "for non-signed-in users" do
+      before(:each) do     
+        first = Factory(:user, :name => "Gore", :email => "vidal@example.com")
+        second = Factory(:user, :name => "Norman", :email => "Mailer@example.com")
+        third = Factory(:user, :name => "Bob", :email => "another@example.com")
+        fourth  = Factory(:user, :name => "Ben", :email => "another@example.net")
+
+        @users = [first, second, third, fourth]
+
+      end
+     
+      it "should only show public profiles" do
+         @users.each do |user|
+           if(user.public) 
+              get :show, :id => user.id
+              response.should have_selector("li", :content => user.name)
+
+           elsif(!user.public) 
+               get :show, :id => user.id
+               response.should_not have_selector("li", :content => user.name)
+             end
+           end
+        end
+      end
+
+    describe "for signed-in users" do
+
+      before(:each) do
+        @user = test_sign_in(Factory(:user))
+        first = Factory(:user, :name => "Gore", :email => "vidal@example.com")
+        second = Factory(:user, :name => "Norman", :email => "Mailer@example.com")
+        third = Factory(:user, :name => "Bob", :email => "another@example.com")
+        fourth  = Factory(:user, :name => "Ben", :email => "another@example.net")
+
+        @users = [@user, first, second, third, fourth]
+      end      
+
+      it "should show public and private profiles" do
+
+         @users.each do |user|
+               get :show, :id => user.id
+               response.should have_selector("li", :content => user.name)
+         end
+       end
+    end
+
       it "should paginate users" do
         get :index
         response.should have_selector('div.pagination')

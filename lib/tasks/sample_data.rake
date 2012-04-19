@@ -21,7 +21,17 @@ def make_users
     User.create!(:name => name,
                  :email => email,
                  :password => password,
-                 :password_confirmation => password)
+                 :password_confirmation => password,:public => true)
+                 end
+    100.times do |n|
+      name  = Faker::Name.name
+      email = "example2-#@railstutorial.org"
+      password  = "password"
+      User.create!(:name => name,
+                   :email => email,
+                   :password => password,
+                   :password_confirmation => password,
+                   :public => false) 
   end
 end
 
